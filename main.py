@@ -8,6 +8,24 @@ import os
 import pandas as pd
 from datetime import datetime
 
+from flask import Flask   # 👈 added
+import threading          # 👈 added
+
+# --- KEEP ALIVE WEB SERVER ---
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_web():
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
+def keep_alive():
+    t = threading.Thread(target=run_web)
+    t.start()
+# -----------------------------
+
 # Load environment variables
 load_dotenv()
 
@@ -437,4 +455,5 @@ async def on_ready():
     logging.info(f"Bot connected as {bot.user}")
 
 # --- RUN BOT ---
+keep_alive()  
 bot.run(TOKEN)
