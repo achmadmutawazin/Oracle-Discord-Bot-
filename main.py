@@ -219,22 +219,27 @@ async def start_verification(member, guild):
         return
 
     try:
-        msg = await bot.wait_for(
-            "message", timeout=180,
-            check=lambda m: m.author == member and isinstance(m.channel, discord.DMChannel)
-        )
-        valid, parsed = validate_input(msg.content)
-        if not valid:
-            embed_invalid = discord.Embed(
-                title="❌ Invalid Format",
-                description="Your input is invalid. Please try again later.",
-                color=discord.Color.red()
+        # ⬇️ FIX: Keep asking until valid input
+        while True:
+            msg = await bot.wait_for(
+                "message", timeout=180,
+                check=lambda m: m.author == member and isinstance(m.channel, discord.DMChannel)
             )
-            await dm.send(embed=embed_invalid)
-            return
+            valid, parsed = validate_input(msg.content)
+            if not valid:
+                embed_invalid = discord.Embed(
+                    title="❌ Invalid Input",
+                    description=f"Your input was:\n```{msg.content}```\n"
+                                "⚠️ Format must be:\n"
+                                "`email, nama lengkap, tanggal lahir(dd-mm-yyyy), nickname`",
+                    color=discord.Color.red()
+                )
+                await dm.send(embed=embed_invalid)
+                continue  # ask again
+            email, nama, tgl, nickname = parsed
+            break  # ✅ valid, exit loop
 
-        email, nama, tgl, nickname = parsed
-
+        # --- (the rest of your existing logic below remains unchanged) ---
         match = df[df["Email"].str.lower() == email.lower()]
         if not match.empty:
             row = match.iloc[0]
@@ -284,11 +289,9 @@ async def start_verification(member, guild):
                     if welcome_channel:
                         embed_welcome = discord.Embed(
                             title="🎉 Welcome to Oracle!",
-                            description=(
-                                f"Welcome {member.mention}!\n\n"
-                                f"No Anggota: {no_anggota}\n\n"
-                                f"You are now part of Member Oracle. 🎉"
-                            ),
+                            description=(f"Welcome {member.mention}!\n\n"
+                                         f"No Anggota: {no_anggota}\n\n"
+                                         f"You are now part of Member Oracle. 🎉"),
                             color=discord.Color.green()
                         )
                         await welcome_channel.send(embed=embed_welcome)
@@ -316,11 +319,9 @@ async def start_verification(member, guild):
                     if welcome_channel:
                         embed_welcome = discord.Embed(
                             title="🎉 Welcome to Oracle!",
-                            description=(
-                                f"Welcome {member.mention}!\n\n"
-                                f"No Anggota: {no_anggota}\n\n"
-                                f"You are now part of Member Oracle. 🎉"
-                            ),
+                            description=(f"Welcome {member.mention}!\n\n"
+                                         f"No Anggota: {no_anggota}\n\n"
+                                         f"You are now part of Member Oracle. 🎉"),
                             color=discord.Color.green()
                         )
                         await welcome_channel.send(embed=embed_welcome)
@@ -349,11 +350,9 @@ async def start_verification(member, guild):
             if welcome_channel:
                 embed_welcome = discord.Embed(
                     title="🎉 Welcome to Oracle!",
-                    description=(
-                        f"Welcome {member.mention}!\n\n"
-                        f"No Anggota: {no_anggota}\n\n"
-                        f"You are now part of Member Oracle. 🎉"
-                    ),
+                    description=(f"Welcome {member.mention}!\n\n"
+                                 f"No Anggota: {no_anggota}\n\n"
+                                 f"You are now part of Member Oracle. 🎉"),
                     color=discord.Color.green()
                 )
                 await welcome_channel.send(embed=embed_welcome)
@@ -433,10 +432,8 @@ async def sendverify(ctx):
 
     embed = discord.Embed(
         title="🔰 Member Verification",
-        description=(
-            f"React with {VERIFICATION_EMOJI} to begin verification.\n\n"
-            "I will DM you for your data."
-        ),
+        description=(f"React with {VERIFICATION_EMOJI} to begin verification.\n\n"
+                     "I will DM you for your data."),
         color=discord.Color.blue()
     )
     msg = await ctx.send(embed=embed)
@@ -452,6 +449,5 @@ async def on_ready():
     logging.info(f"Bot connected as {bot.user}")
 
 # --- RUN BOT ---
-keep_alive()  
+keep_alive() 
 bot.run(TOKEN)
-
