@@ -309,7 +309,7 @@ async def start_verification(member, guild):
                     if welcome_channel:
                         embed_welcome = discord.Embed(
                             title="🎉 Welcome to Oracle!",
-                            description=(f"Welcome {member.mention}!\n\n"
+                            description=(f"Welcome {member.mention} ({member.display_name})!\n\n"
                                          f"No Anggota: {no_anggota}\n\n"
                                          f"You are now part of Member Oracle. 🎉"),
                             color=discord.Color.green()
@@ -471,3 +471,4 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
