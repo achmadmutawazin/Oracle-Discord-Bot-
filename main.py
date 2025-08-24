@@ -7,11 +7,9 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 from datetime import datetime
+from flask import Flask
+import threading
 
-from flask import Flask   # 👈 added
-import threading          # 👈 added
-
-# --- KEEP ALIVE WEB SERVER ---
 app = Flask('')
 
 @app.route('/')
@@ -24,7 +22,6 @@ def run_web():
 def keep_alive():
     t = threading.Thread(target=run_web)
     t.start()
-# -----------------------------
 
 # Load environment variables
 load_dotenv()
@@ -457,3 +454,4 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive()  
 bot.run(TOKEN)
+
