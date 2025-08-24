@@ -153,26 +153,41 @@ def check_and_update(email, nama, tgl, nickname):
         logging.error(f"❌ Error updating DB: {e}")
         return "ERROR", "OTM-999", nama
 
-# --- INPUT VALIDATION ---
+# --- INPUT VALIDATION (Improved) ---
 def validate_input(user_input):
     try:
         parts = [p.strip() for p in user_input.split(",")]
         if len(parts) != 4:
-            return False, None
+            return False, "❌ Wrong number of fields. You must provide 4 fields: email, nama lengkap, tanggal lahir, nickname.", None
+
         email, nama, tgl, nickname = parts
+
+        # Email check
         if not re.match(EMAIL_REGEX, email):
-            return False, None
+            return False, f"❌ Invalid email format: `{email}`", None
+
+        # Name check
+        if not nama or len(nama) < 2:
+            return False, f"❌ Invalid name: `{nama}`", None
+
+        # Date check
         try:
             datetime.strptime(tgl, "%d-%m-%Y")
         except:
             try:
                 datetime.strptime(tgl, "%d-%m")
             except:
-                return False, None
-        return True, (email, nama, tgl, nickname)
+                return False, f"❌ Invalid date format: `{tgl}`. Use `dd-mm-yyyy` (e.g. 25-12-2000)", None
+
+        # Nickname check
+        if not nickname:
+            return False, "❌ Nickname cannot be empty.", None
+
+        return True, None, (email, nama, tgl, nickname)
+
     except Exception as e:
         logging.error(f"Validation error: {e}")
-        return False, None
+        return False, "❌ Unexpected error during validation.", None
 
 # --- ASSIGN ROLE ---
 async def assign_role(member, guild):
@@ -225,19 +240,24 @@ async def start_verification(member, guild):
                 "message", timeout=180,
                 check=lambda m: m.author == member and isinstance(m.channel, discord.DMChannel)
             )
-            valid, parsed = validate_input(msg.content)
+            valid, error_msg, parsed = validate_input(msg.content)
+
             if not valid:
                 embed_invalid = discord.Embed(
                     title="❌ Invalid Input",
-                    description=f"Your input was:\n```{msg.content}```\n"
-                                "⚠️ Format must be:\n"
-                                "`email, nama lengkap, tanggal lahir(dd-mm-yyyy), nickname`",
+                    description=(f"{error_msg}\n\n"
+                                 f"Your input was:\n```{msg.content}```\n"
+                                 "👉 Correct format:\n"
+                                 "`email, nama lengkap, tanggal lahir(dd-mm-yyyy), nickname`\n\n"
+                                 "✅ Example:\n"
+                                 "`john.doe@gmail.com, John Doe, 25-12-2000, johnd`"),
                     color=discord.Color.red()
                 )
                 await dm.send(embed=embed_invalid)
-                continue  # ask again
+                continue  # keep waiting until fixed
+
             email, nama, tgl, nickname = parsed
-            break  # ✅ valid, exit loop
+            break
 
         # --- (the rest of your existing logic below remains unchanged) ---
         match = df[df["Email"].str.lower() == email.lower()]
