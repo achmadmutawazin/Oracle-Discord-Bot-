@@ -1,0 +1,6 @@
+WARNING:discord.client:PyNaCl is not installed, voice will NOT be supported
+INFO:discord.client:logging in using static token
+INFO:discord.gateway:Shard ID None has connected to Gateway (Session ID: c7138bc7008a5e3f40248d9422cbf1ea).
+INFO:root:Bot connected as Oracle Official#0606
+ERROR:root:❌ Failed to save database: [Errno 13] Permission denied: 'Pendataan Ulang Anggota Oracle (Jawaban).xlsx'
+INFO:discord.gateway:Shard ID None has successfully RESUMED session c7138bc7008a5e3f40248d9422cbf1ea.
