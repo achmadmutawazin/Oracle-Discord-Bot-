@@ -3,4 +3,6 @@ python-dotenv
 pandas
 openpyxl
 flask
-
+gspread
+oauth2client
+gspread-dataframe
