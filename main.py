@@ -27,6 +27,26 @@ def keep_alive():
     t = threading.Thread(target=run_web)
     t.start()
 
+    # Google Sheets connection function
+def connect_google_sheets():
+    try:
+        # Path from Render Secret File (adjust if different)
+        with open("/etc/secrets/GOOGLE_SERVICE_CREDS.json") as f:
+            creds_dict = json.load(f)
+
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive",
+        ]
+        credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+        gc = gspread.authorize(credentials)
+
+        logging.info("✅ Successfully connected to Google Sheets")
+        return gc
+    except Exception as e:
+        logging.error(f"❌ Failed to connect to Google Sheets: {e}")
+        return None
+
 # Load environment variables
 load_dotenv()
 
@@ -53,23 +73,17 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 SHEET_NAME = "rapih"
 
-# Load service account credentials from environment variable
-creds_json = os.getenv("GOOGLE_SERVICE_CREDS")
-if not creds_json:
-    raise Exception("❌ GOOGLE_SERVICE_CREDS not found in environment variables")
-
-creds_dict = json.loads(creds_json)
-scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
-
-gc = gspread.authorize(credentials)
+gc = connect_google_sheets()
 
 try:
-    SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")  # set this in Render env
+    if not gc:
+        raise Exception("Google Sheets client not initialized")
+
     sh = gc.open_by_key(SPREADSHEET_ID)
     worksheet = sh.worksheet(SHEET_NAME)
     data = worksheet.get_all_values()
     df = pd.DataFrame(data[1:], columns=data[0])  # assumes first row is header
+
 except Exception as e:
     logging.error(f"❌ Failed to connect to Google Sheet: {e}")
     df = pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota"])
@@ -485,3 +499,6 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
+
+
