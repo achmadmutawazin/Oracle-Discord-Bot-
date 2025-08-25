@@ -9,6 +9,10 @@ import pandas as pd
 from datetime import datetime
 from flask import Flask
 import threading
+import json
+
+import gspread
+from google.oauth2.service_account import Credentials
 
 app = Flask('')
 
@@ -41,25 +45,33 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Config
 VERIFIED_ROLE_NAME = "Member Oracle"
 VERIFICATION_CHANNEL_NAME = "📢▐❘⊸𝐕𝖊𝖗𝖎𝖋𝖎𝐤𝖆𝖘𝖎"
-WELCOME_CHANNEL_NAME = "📝▐❘⊸𝐒𝖊𝖓𝖘𝖚𝖘⭒𝐌𝖊𝖒𝖇𝖊𝖗⭒𝐎𝖗𝖆𝖈𝖑𝖊"
+WELCOME_CHANNEL_NAME = "📝▐❘⊸𝐒𝖊𝖓𝖘𝖚𝖘⭒𝐌𝖊𝖒𝖇𝖊𝐫⭒𝐎𝖗𝖆𝖈𝖑𝖊"
 VERIFICATION_EMOJI = "🙏"
 TOKEN = os.getenv("DISCORD_TOKEN")
 
-# --- DB CONFIG ---
-DB_FILE = "Pendataan Ulang Anggota Oracle (Jawaban).xlsx"
+# --- GOOGLE SHEET CONFIG ---
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 SHEET_NAME = "rapih"
 
+# Load service account credentials from environment variable
+creds_json = os.getenv("GOOGLE_SERVICE_CREDS")
+if not creds_json:
+    raise Exception("❌ GOOGLE_SERVICE_CREDS not found in environment variables")
+
+creds_dict = json.loads(creds_json)
+scopes = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+credentials = Credentials.from_service_account_info(creds_dict, scopes=scopes)
+
+gc = gspread.authorize(credentials)
+
 try:
-    df = pd.read_excel(DB_FILE, sheet_name=SHEET_NAME, header=None)
-    df = df.rename(columns={
-        0: "Email",
-        1: "Nama Lengkap",
-        2: "Tgl Lahir",
-        3: "Display Nama Line",
-        4: "No Anggota"
-    })
+    SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")  # set this in Render env
+    sh = gc.open_by_key(SPREADSHEET_ID)
+    worksheet = sh.worksheet(SHEET_NAME)
+    data = worksheet.get_all_values()
+    df = pd.DataFrame(data[1:], columns=data[0])  # assumes first row is header
 except Exception as e:
-    logging.error(f"❌ Failed to open database file: {e}")
+    logging.error(f"❌ Failed to connect to Google Sheet: {e}")
     df = pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota"])
 
 EMAIL_REGEX = r"(^[a-z0-9_.+-]+@[a-z0-9-]+\.[a-z0-9-.]+$)"
@@ -93,11 +105,13 @@ def generate_no_anggota():
         return "OTM-999"
 
 def save_db():
+    """Push local df back to Google Sheets"""
+    global df, worksheet
     try:
-        with pd.ExcelWriter(DB_FILE, engine="openpyxl", mode="w") as writer:
-            df.to_excel(writer, sheet_name=SHEET_NAME, index=False, header=False)
+        worksheet.clear()
+        worksheet.update([df.columns.values.tolist()] + df.values.tolist())
     except Exception as e:
-        logging.error(f"❌ Failed to save database: {e}")
+        logging.error(f"❌ Failed to save database to Google Sheets: {e}")
 
 def check_and_update(email, nama, tgl, nickname):
     global df
@@ -153,7 +167,7 @@ def check_and_update(email, nama, tgl, nickname):
         logging.error(f"❌ Error updating DB: {e}")
         return "ERROR", "OTM-999", nama
 
-# --- INPUT VALIDATION (Improved) ---
+# --- INPUT VALIDATION ---
 def validate_input(user_input):
     try:
         parts = [p.strip() for p in user_input.split(",")]
@@ -471,5 +485,3 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
-
-
