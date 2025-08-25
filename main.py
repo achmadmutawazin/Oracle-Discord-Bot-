@@ -119,11 +119,19 @@ def generate_no_anggota():
         return "OTM-999"
 
 def save_db():
-    """Push local df back to Google Sheets"""
+    """Push local df back to Google Sheets safely (no NaN issues)"""
     global df, worksheet
     try:
+        # Replace NaN (empty cells) with ""
+        df = df.fillna("")
+
+        # Clear old sheet
         worksheet.clear()
+
+        # Push header + rows
         worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+
+        logging.info("✅ Database saved to Google Sheets")
     except Exception as e:
         logging.error(f"❌ Failed to save database to Google Sheets: {e}")
 
@@ -499,6 +507,7 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
 
 
