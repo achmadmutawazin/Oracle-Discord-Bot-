@@ -40,8 +40,8 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Config
 VERIFIED_ROLE_NAME = "Member Oracle"
-VERIFICATION_CHANNEL_NAME = "verification"
-WELCOME_CHANNEL_NAME = "welcome-oracle-member-❤️"
+VERIFICATION_CHANNEL_NAME = "📢▐❘⊸𝐕𝖊𝖗𝖎𝖋𝖎𝐤𝖆𝖘𝖎"
+WELCOME_CHANNEL_NAME = "📝▐❘⊸𝐒𝖊𝖓𝖘𝖚𝖘⭒𝐌𝖊𝖒𝖇𝖊𝖗⭒𝐎𝖗𝖆𝖈𝖑𝖊"
 VERIFICATION_EMOJI = "🙏"
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -471,4 +471,5 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
