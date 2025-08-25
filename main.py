@@ -31,7 +31,7 @@ def keep_alive():
 def connect_google_sheets():
     try:
         # Path from Render Secret File (adjust if different)
-        with open("/etc/secrets/GOOGLE_SERVICE_CREDS.json") as f:
+        with open("/etc/secrets/GOOGLE_SERVICE_CREDS") as f:
             creds_dict = json.load(f)
 
         scopes = [
@@ -499,6 +499,7 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
 
 
