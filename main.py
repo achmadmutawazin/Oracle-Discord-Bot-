@@ -65,7 +65,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 # Config
 VERIFIED_ROLE_NAME = "Member Oracle"
 VERIFICATION_CHANNEL_NAME = "📢▐❘⊸𝐕𝖊𝖗𝖎𝖋𝖎𝐤𝖆𝖘𝖎"
-WELCOME_CHANNEL_NAME = "📝▐❘⊸𝐒𝖊𝖓𝖘𝖚𝖘⭒𝐌𝖊𝖒𝖇𝖊𝐫⭒𝐎𝖗𝖆𝖈𝖑𝖊"
+WELCOME_CHANNEL_ID = 1408820923905216602
 VERIFICATION_EMOJI = "🙏"
 TOKEN = os.getenv("DISCORD_TOKEN")
 
@@ -254,7 +254,7 @@ async def assign_role(member, guild):
 # --- START VERIFICATION ---
 async def start_verification(member, guild):
     verification_channel = discord.utils.get(guild.text_channels, name=VERIFICATION_CHANNEL_NAME)
-    welcome_channel = discord.utils.get(guild.text_channels, name=WELCOME_CHANNEL_NAME)
+    welcome_channel = guild.get_channel(WELCOME_CHANNEL_ID)
 
     try:
         dm = await member.create_dm()
@@ -510,6 +510,7 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
 
 
