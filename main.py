@@ -63,10 +63,10 @@ intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Config
-VERIFIED_ROLE_NAME = 1218217885940318328
+VERIFIED_ROLE_ID = 1218217885940318328
 NEW_MAN_ROLE_ID = 1407458727556026510
 NEW_WOMAN_ROLE_ID = 1407458804437880915
-VERIFICATION_CHANNEL_NAME = 1407046741458555062
+VERIFICATION_CHANNEL_ID = 1407046741458555062
 WELCOME_CHANNEL_ID = 1408820923905216602
 VERIFICATION_EMOJI = "🙏"
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -233,9 +233,9 @@ def validate_input(user_input):
 # --- ASSIGN ROLE ---
 async def assign_role(member, guild):
     try:
-        role_verified = guild.get.role(VERIFIED_ROLE_NAME)
-        role_new_man = guild.get.role(NEW_MAN_ROLE_ID)
-        role_new_woman = guild.get.role(NEW_WOMAN_ROLE_ID)
+        role_verified = guild.get_role(VERIFIED_ROLE_ID)
+        role_new_man = guild.get_role(NEW_MAN_ROLE_ID)
+        role_new_woman = guild.get_role(NEW_WOMAN_ROLE_ID)
 
         roles_to_remove = []
         if role_new_man in member.roles:
@@ -438,13 +438,13 @@ async def on_raw_reaction_add(payload):
     if member.bot:
         return
     channel = guild.get_channel(payload.channel_id)
-    if channel.id != VERIFICATION_CHANNEL_NAME:
+    if channel.id != VERIFICATION_CHANNEL_ID:
         return
     message = await channel.fetch_message(payload.message_id)
     if message.author.id != bot.user.id:
         return
 
-    verified_role = guild.get.role(VERIFIED_ROLE_NAME)
+    verified_role = guild.get_role(VERIFIED_ROLE_ID)
     if verified_role in member.roles:
         try:
             dm = await member.create_dm()
@@ -487,8 +487,8 @@ async def on_raw_reaction_add(payload):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def sendverify(ctx):
-    if ctx.channel.id != VERIFICATION_CHANNEL_NAME:
-        await ctx.send(f"⚠️ Please use this command in #{VERIFICATION_CHANNEL_NAME}>")
+    if ctx.channel.id != VERIFICATION_CHANNEL_ID:
+        await ctx.send(f"⚠️ Please use this command in #{VERIFICATION_CHANNEL_ID}>")
         return
 
     embed = discord.Embed(
@@ -512,12 +512,3 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
-
-
-
-
-
-
-
-
-
