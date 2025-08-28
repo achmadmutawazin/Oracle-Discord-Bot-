@@ -63,7 +63,9 @@ intents.guilds = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Config
-VERIFIED_ROLE_NAME = "Member Oracle"
+VERIFIED_ROLE_NAME = 1218217885940318328
+NEW_MAN_ROLE_ID = 1407458727556026510
+NEW_WOMAN_ROLE_ID = 1407458804437880915
 VERIFICATION_CHANNEL_NAME = 1407046741458555062
 WELCOME_CHANNEL_ID = 1408820923905216602
 VERIFICATION_EMOJI = "🙏"
@@ -231,9 +233,9 @@ def validate_input(user_input):
 # --- ASSIGN ROLE ---
 async def assign_role(member, guild):
     try:
-        role_verified = discord.utils.get(guild.roles, name=VERIFIED_ROLE_NAME)
-        role_new_man = discord.utils.get(guild.roles, name="new man")
-        role_new_woman = discord.utils.get(guild.roles, name="new woman")
+        role_verified = guild.get.role(VERIFIED_ROLE_NAME)
+        role_new_man = guild.get.role(NEW_MAN_ROLE_ID)
+        role_new_woman = guild.get.role(NEW_WOMAN_ROLE_ID)
 
         roles_to_remove = []
         if role_new_man in member.roles:
@@ -442,7 +444,7 @@ async def on_raw_reaction_add(payload):
     if message.author.id != bot.user.id:
         return
 
-    verified_role = discord.utils.get(guild.roles, name=VERIFIED_ROLE_NAME)
+    verified_role = guild.get.role(VERIFIED_ROLE_NAME)
     if verified_role in member.roles:
         try:
             dm = await member.create_dm()
@@ -510,6 +512,7 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
 
 
