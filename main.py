@@ -511,4 +511,5 @@ async def on_ready():
 
 # --- RUN BOT ---
 keep_alive() 
-bot.run(TOKEN)
+bot.run(TOKEN, reconnect=True)
+
