@@ -64,7 +64,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Config
 VERIFIED_ROLE_NAME = "Member Oracle"
-VERIFICATION_CHANNEL_NAME = "📢▐❘⊸𝐕𝖊𝖗𝖎𝖋𝖎𝐤𝖆𝖘𝖎"
+VERIFICATION_CHANNEL_NAME = 1407046741458555062
 WELCOME_CHANNEL_ID = 1408820923905216602
 VERIFICATION_EMOJI = "🙏"
 TOKEN = os.getenv("DISCORD_TOKEN")
@@ -253,7 +253,7 @@ async def assign_role(member, guild):
 
 # --- START VERIFICATION ---
 async def start_verification(member, guild):
-    verification_channel = discord.utils.get(guild.text_channels, name=VERIFICATION_CHANNEL_NAME)
+    verification_channel = guild.get_channel(VERIFICATION_CHANNEL_NAME)
     welcome_channel = guild.get_channel(WELCOME_CHANNEL_ID)
 
     try:
@@ -436,7 +436,7 @@ async def on_raw_reaction_add(payload):
     if member.bot:
         return
     channel = guild.get_channel(payload.channel_id)
-    if channel.name != VERIFICATION_CHANNEL_NAME:
+    if channel.id != VERIFICATION_CHANNEL_NAME:
         return
     message = await channel.fetch_message(payload.message_id)
     if message.author.id != bot.user.id:
@@ -485,8 +485,8 @@ async def on_raw_reaction_add(payload):
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def sendverify(ctx):
-    if ctx.channel.name != VERIFICATION_CHANNEL_NAME:
-        await ctx.send(f"⚠️ Please use this command in #{VERIFICATION_CHANNEL_NAME}")
+    if ctx.channel.id != VERIFICATION_CHANNEL_NAME:
+        await ctx.send(f"⚠️ Please use this command in #{VERIFICATION_CHANNEL_NAME}>")
         return
 
     embed = discord.Embed(
@@ -510,6 +510,7 @@ async def on_ready():
 # --- RUN BOT ---
 keep_alive() 
 bot.run(TOKEN)
+
 
 
 
