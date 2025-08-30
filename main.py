@@ -86,7 +86,7 @@ def get_latest_df():
         return pd.DataFrame(data[1:], columns=data[0])
     except Exception as e:
         logging.error(f"❌ Failed to reload Google Sheet: {e}")
-        return pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota", "Jenis Kelamin"])
+        return pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota"])
 
 EMAIL_REGEX = r"(^[a-z0-9_.+-]+@[a-z0-9-]+\.[a-z0-9-.]+$)"
 
@@ -133,7 +133,7 @@ def validate_input(user_input):
         return False, "❌ Unexpected error during validation.", None
 
 # --- ASSIGN ROLE ---
-async def assign_role(member, guild, gender=None):
+async def assign_role(member, guild):
     try:
         role_verified = guild.get_role(VERIFIED_ROLE_ID)
         role_new_man = guild.get_role(NEW_MAN_ROLE_ID)
@@ -207,7 +207,7 @@ async def start_verification(member, guild):
             no_anggota = row["No Anggota"]
             tgl_lahir = format_birthdate(row["Tgl Lahir"])
 
-            await assign_role(member, guild, gender)
+            await assign_role(member, guild)
             try:
                 await member.edit(nick=f"{no_anggota} | {nama_db}")
             except discord.Forbidden:
