@@ -212,7 +212,21 @@ async def start_verification(member, guild):
                 await member.edit(nick=f"{no_anggota} | {nama_db}")
             except discord.Forbidden:
                 pass
-
+            try:
+                await dm.send(embed=discord.Embed(
+                    title="✅ Verification Successful",
+                    description=(
+                        f"Halo {nama_db}!\n\n"
+                        f"Kamu sudah berhasil diverifikasi 🎉\n"
+                        f"No Anggota kamu: **{no_anggota}**\n\n"
+                        f"Silakan lihat channel <#{VERIFICATION_CHANNEL_ID}> "
+                        f"untuk akses lengkap dan aturan komunitas."
+                    ),
+                    color=discord.Color.green()
+                ))
+            except discord.Forbidden:
+                logging.warning(f"Couldn't DM {member.display_name} after verification.")
+            
             if welcome_channel:
                 embed_welcome = discord.Embed(
                     title="🎉 Welcome to Oracle!",
@@ -226,7 +240,7 @@ async def start_verification(member, guild):
         else:
             await dm.send(embed=discord.Embed(
                 title="❌ Not Found",
-                description="Your data was not found in our database. Please contact an administrator.",
+                description="Datamu ga ketemu nih di database, coba kontak adminya yach :(",
                 color=discord.Color.red()
             ))
 
