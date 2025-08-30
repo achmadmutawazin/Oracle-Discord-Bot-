@@ -150,13 +150,6 @@ async def assign_role(member, guild, gender=None):
 
         if role_verified:
             await member.add_roles(role_verified)
-
-        if gender:
-            if gender.lower() == "pria" and role_new_man:
-                await member.add_roles(role_new_man)
-            elif gender.lower() == "wanita" and role_new_woman:
-                await member.add_roles(role_new_woman)
-
     except Exception as e:
         logging.error(f"Error assigning role: {e}")
 
@@ -212,7 +205,6 @@ async def start_verification(member, guild):
             row = match.iloc[0]
             nama_db = row["Nama Lengkap"]
             no_anggota = row["No Anggota"]
-            gender = row["Jenis Kelamin"]
             tgl_lahir = format_birthdate(row["Tgl Lahir"])
 
             await assign_role(member, guild, gender)
@@ -224,7 +216,7 @@ async def start_verification(member, guild):
             if welcome_channel:
                 embed_welcome = discord.Embed(
                     title="🎉 Welcome to Oracle!",
-                    description=(f"Welcome {member.mention}!\n\n"
+                    description=(f"Welcome **{member.display_name}** ({member.mention})!\n\n"
                                  f"No Anggota: {no_anggota}\n\n"
                                  "You are now part of Member Oracle. 🎉"),
                     color=discord.Color.green()
