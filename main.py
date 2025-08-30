@@ -74,32 +74,28 @@ TOKEN = os.getenv("DISCORD_TOKEN")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 SHEET_NAME = "rapih"
 
+# Google Sheets client
 gc = connect_google_sheets()
 
-try:
-    if not gc:
-        raise Exception("Google Sheets client not initialized")
-
-    sh = gc.open_by_key(SPREADSHEET_ID)
-    worksheet = sh.worksheet(SHEET_NAME)
-    data = worksheet.get_all_values()
-    df = pd.DataFrame(data[1:], columns=data[0])  # assumes first row is header
-
-except Exception as e:
-    logging.error(f"❌ Failed to connect to Google Sheet: {e}")
-    df = pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota"])
+def get_latest_df():
+    """Fetch the latest data from Google Sheets."""
+    try:
+        sh = gc.open_by_key(SPREADSHEET_ID)
+        worksheet = sh.worksheet(SHEET_NAME)
+        data = worksheet.get_all_values()
+        return pd.DataFrame(data[1:], columns=data[0])
+    except Exception as e:
+        logging.error(f"❌ Failed to reload Google Sheet: {e}")
+        return pd.DataFrame(columns=["Email", "Nama Lengkap", "Tgl Lahir", "Display Nama Line", "No Anggota", "Jenis Kelamin"])
 
 EMAIL_REGEX = r"(^[a-z0-9_.+-]+@[a-z0-9-]+\.[a-z0-9-.]+$)"
 
 def format_birthdate(date_str: str) -> str:
-    """Convert DD/MM -> 'DD Month' format (e.g., 11/05 -> 11 May)."""
     try:
-        # Try parsing with day/month only
         parsed = datetime.strptime(date_str.strip(), "%d/%m")
-        return parsed.strftime("%d %B")  # e.g., '11 May'
+        return parsed.strftime("%d %B")
     except Exception:
-        return date_str  # fallback to raw string if bad format
-
+        return date_str
 
 # --- INPUT VALIDATION ---
 def validate_input(user_input):
@@ -123,7 +119,7 @@ def validate_input(user_input):
                 datetime.strptime(tgl, "%d-%m")
             except:
                 try:
-                    datetime.strptime(tgl, "%d/%m")  # <-- add this for consistency
+                    datetime.strptime(tgl, "%d/%m")
                 except:
                     return False, f"❌ Salah ya formatnya: `{tgl}`. pakai format DD/MM (Contohnya DD/MM)", None
 
@@ -208,7 +204,10 @@ async def start_verification(member, guild):
             email, nama, tgl, nickname = parsed
             break
 
-        match = df[df["Email"].str.lower() == email.lower()]
+        # 🔄 Always fetch fresh Google Sheet data
+        df_latest = get_latest_df()
+
+        match = df_latest[df_latest["Email"].str.lower() == email.lower()]
         if not match.empty:
             row = match.iloc[0]
             nama_db = row["Nama Lengkap"]
