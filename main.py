@@ -153,6 +153,25 @@ async def assign_role(member, guild):
     except Exception as e:
         logging.error(f"Error assigning role: {e}")
 
+# --- SAFE NICKNAME HANDLER ---
+def safe_nickname(no_anggota, nama_db):
+    # Combine with separator
+    raw_nick = f"{no_anggota} | {nama_db}"
+
+    # Remove newlines / weird spacing
+    nick = re.sub(r"[\r\n]+", " ", raw_nick).strip()
+
+    # Enforce max length (32 chars for Discord)
+    if len(nick) > 32:
+        nick = nick[:32]
+
+    # Ensure nickname is not empty
+    if not nick:
+        nick = "Member"
+
+    return nick
+
+
 # --- START VERIFICATION ---
 async def start_verification(member, guild):
     verification_channel = guild.get_channel(VERIFICATION_CHANNEL_ID)
@@ -209,9 +228,14 @@ async def start_verification(member, guild):
 
             await assign_role(member, guild)
             try:
-                await member.edit(nick=f"{no_anggota} | {nama_db}")
+                new_nick = safe_nickname(no_anggota, nama_db)
+                logging.info(f"Trying to set nickname for {member.display_name} -> '{new_nick}' (len={len(new_nick)})")
+                await member.edit(nick=new_nick)
             except discord.Forbidden:
-                pass
+                logging.warning(f"❌ Cannot change nickname for {member.display_name}")
+            except discord.HTTPException as e:
+                logging.error(f"❌ Failed to edit nickname for {member.display_name}: {e}")
+
             try:
                 await dm.send(embed=discord.Embed(
                     title="✅ Verification Successful",
@@ -250,6 +274,7 @@ async def start_verification(member, guild):
             description="Verification timed out. Please restart.",
             color=discord.Color.red()
         ))
+
 
 # --- ACTIVE VERIFICATION TRACKER ---
 active_verifications = set()
